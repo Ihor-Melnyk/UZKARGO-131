@@ -9,7 +9,6 @@ function onTaskExecuteVerifyRequest(routeStage) {
       throw "Спочатку зареєструйте документ!";
     }
     command = "CompleteTask";
-    comment = `Ваш запит прийнято та зареєстровано за № ${EdocsApi.getAttributeValue("RegNumber").value} від ${moment(new Date(EdocsApi.getAttributeValue("RegDate").value)).format("DD.MM.YYYY")}`;
     signatures = EdocsApi.getSignaturesAllFiles();
   } else {
     command = "RejectTask";
@@ -31,6 +30,34 @@ function onTaskExecuteVerifyRequest(routeStage) {
     externalSystemMethod: "integration/processDocCommand", // метод зовнішньої системи
     data: DocCommandData, // дані, що очікує зовнішня система для заданого методу
     executeAsync: false, // виконувати завдання асинхронно
+  };
+}
+
+//передача коментаря в eSign
+function onTaskCommentedVerifyRequest(caseTaskComment) {
+  debugger;
+  var orgCode = EdocsApi.getAttributeValue("OrgCode").value;
+  var orgShortName = EdocsApi.getAttributeValue("OrgShortName").value;
+  if (!orgCode || !orgShortName) {
+    return;
+  }
+
+  var methodData = {
+    extSysDocId: CurrentDocument.id,
+    eventType: "CommentAdded",
+    //comment: caseTaskComment.comment,
+    comment: `Ваш запит прийнято та зареєстровано за № ${EdocsApi.getAttributeValue("RegNumber").value} від ${moment(new Date(EdocsApi.getAttributeValue("RegDate").value)).format("DD.MM.YYYY")}`,
+    partyCode: orgCode,
+    userTitle: CurrentUser.name,
+    partyName: orgShortName,
+    occuredAt: new Date(),
+  };
+
+  caseTaskComment.externalAPIExecutingParams = {
+    externalSystemCode: "ESIGN1", // код зовнішньої системи
+    externalSystemMethod: "integration/processEvent", // метод зовнішньої системи
+    data: methodData, // дані, що очікує зовнішня система для заданого методу
+    executeAsync: true, // виконувати завдання асинхронно
   };
 }
 
@@ -109,13 +136,6 @@ function CreateAccountTask() {
   }
 }
 
-//function onTaskExecuteCreateAccount() {
-//  debugger
-//  if(!EdocsApi.getAttributeValue("Connection").value){
-//  throw "Не заповнено атрибут Звя'зок";
-//}
-//}
-
 function controlDisabled(CODE, disabled = true) {
   const control = EdocsApi.getControlProperties(CODE);
   control.disabled = disabled;
@@ -187,6 +207,7 @@ function setContractorOnCreate(portalData) {
 function onCreate() {
   setContractorOnCreate(EdocsApi.getInExtAttributes(CurrentDocument.id.toString()));
   setContractorOnCreateEsign();
+  setContractorHome();
 }
 
 function setContractorOnCreateEsign() {
