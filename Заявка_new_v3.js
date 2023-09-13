@@ -199,7 +199,7 @@ function setContractorOnCreate(portalData) {
     const conInfo = EdocsApi.getContractorByCode(code, "debtor");
     debugger;
     if (conInfo) {
-      EdocsApi.setAttributeValue({ code: "ContractorId", value: conInfo.contractorId });
+      EdocsApi.setAttributeValue({ code: "ContractorId", value: conInfo.personId });
       EdocsApi.setAttributeValue({ code: "ContractorShortName", value: conInfo.shortName });
       EdocsApi.setAttributeValue({ code: "ContractorFullName", value: conInfo.fullName });
       EdocsApi.setAttributeValue({ code: "CustomerEDRPOU", value: conInfo.code });
