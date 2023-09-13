@@ -5,12 +5,16 @@ function onTaskExecuteVerifyRequest(routeStage) {
     if (!EdocsApi.getAttributeValue("RegDate").value || !EdocsApi.getAttributeValue("RegNumber").value) {
       throw "Спочатку зареєструйте документ!";
     }
-    sendComment(routeStage);
   }
-  sendCommand(routeStage);
+  sendComment(routeStage);
 }
 
+function onTaskExecuteCreateAccount(routeStage) {
+  sendCommand(routeStage);
+}
 function sendCommand(routeStage) {
+  debugger;
+  var command;
   var comment;
   if (routeStage.executionResult == "executed") {
     command = "CompleteTask";
@@ -40,20 +44,13 @@ function sendCommand(routeStage) {
 }
 
 function sendComment(routeStage) {
-  var comment;
+  debugger;
   var orgCode = EdocsApi.getAttributeValue("OrgCode").value;
   var orgShortName = EdocsApi.getAttributeValue("OrgShortName").value;
   if (!orgCode || !orgShortName) {
     return;
   }
-
-  if (routeStage.executionResult == "executed") {
-    command = "CompleteTask";
-    comment = `Ваш запит прийнято та зареєстровано за № ${EdocsApi.getAttributeValue("RegNumber").value} від ${moment(new Date(EdocsApi.getAttributeValue("RegDate").value)).format("DD.MM.YYYY")}`;
-  } else {
-    command = "RejectTask";
-    comment = routeStage.comment;
-  }
+  var comment = `Ваш запит прийнято та зареєстровано за № ${EdocsApi.getAttributeValue("RegNumber").value} від ${moment(new Date(EdocsApi.getAttributeValue("RegDate").value)).format("DD.MM.YYYY")}`;
   var methodData = {
     extSysDocId: CurrentDocument.id,
     eventType: "CommentAdded",
@@ -236,7 +233,7 @@ function setContractorHome() {
     const code = EdocsApi.getInExtAttributes(CurrentDocument.id.toString()).attributeValues.find(x => x.code == "HomeOrgEDRPOU").value;
     const data = EdocsApi.getContractorByCode(code, "homeOrganization");
     EdocsApi.setAttributeValue({ code: "OrganizationId", value: data.contractorId });
-    EdocsApi.setAttributeValue({ code: "HomeName", value: data.shortName });
+    EdocsApi.setAttributeValue({ code: "HomeName", value: data.fullName });
     EdocsApi.setAttributeValue({ code: "OrgShortName", value: data.shortName });
     EdocsApi.setAttributeValue({ code: "OrgCode", value: code });
     EdocsApi.setAttributeValue({ code: "HomeOrgIPN", value: data.taxId });
